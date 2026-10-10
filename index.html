@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mwakenya Study Hub</title>
+<style>
+  :root {
+    --green: #006b3f;
+    --green-dark: #004d2d;
+    --green-light: #e6f3ec;
+    --red: #c62828;
+    --red-light: #fdecea;
+    --amber: #b26a00;
+    --amber-light: #fff4e0;
+    --ok: #1b7f3a;
+    --ok-light: #e8f5ec;
+    --ink: #1a1a1a;
+    --muted: #666;
+    --line: #e5e7eb;
+    --bg: #ffffff;
+    --card: #ffffff;
+    --surface: #f7f9f8;
+    --radius: 14px;
+    --shadow: 0 2px 10px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; cursor: pointer; }
+  input, select { font: inherit; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  header h1 { font-size: 1.1rem; margin: 0; font-weight: 700; color: var(--green-dark); }
+  .btn {
+    border: 1px solid transparent; border-radius: 10px;
+    padding: 9px 14px; font-weight: 600; font-size: .9rem;
+    background: var(--green); color: #fff;
+    transition: background .15s, transform .05s;
+  }
+  .btn:hover { background: var(--green-dark); }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: #fff; color: var(--green-dark); border-color: var(--green); }
+  .btn.ghost:hover { background: var(--green-light); }
+  .btn.sm { padding: 6px 10px; font-size: .8rem; border-radius: 8px; }
+  .btn.muted { background: var(--surface); color: var(--ink); border-color: var(--line); }
+  .btn.muted:hover { background: #eef1ef; }
+  .btn[disabled] { opacity: .6; cursor: default; }
+
+  /* Alert banner */
+  #alertBanner {
+    display: none; width: 100%; border: 0;
+    background: var(--red-light); color: var(--red);
+    font-weight: 600; padding: 10px 16px; text-align: center;
+    border-bottom: 1px solid #f5c6c2;
+  }
+  #alertBanner:hover { background: #fbdcd8; }
+
+  /* Hero */
+  .hero { padding: 34px 0 20px; text-align: center; }
+  .hero h2 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); margin: 0 0 8px; letter-spacing: -.01em; color: var(--green-dark); }
+  .hero p { margin: 0 auto 20px; color: var(--muted); max-width: 560px; }
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    max-width: 620px; margin: 0 auto;
+    background: #fff; border: 2px solid var(--green);
+    border-radius: 999px; padding: 6px 8px 6px 16px;
+    box-shadow: 0 6px 24px rgba(0,107,63,.12);
+  }
+  .search input {
+    flex: 1; border: 0; outline: 0; font-size: 1rem; min-width: 0; background: transparent;
+  }
+  .search .clear { background: transparent; border: 0; color: var(--muted); font-size: 1.2rem; padding: 4px 8px; display: none; }
+  .search-hint { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+  .search-hint span { color: var(--green-dark); font-weight: 600; cursor: pointer; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--line); margin: 18px 0 16px; padding-bottom: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto; background: transparent; border: 0; border-bottom: 3px solid transparent;
+    padding: 10px 12px; font-weight: 600; color: var(--muted); white-space: nowrap; font-size: .92rem;
+  }
+  .tab.active { color: var(--green-dark); border-bottom-color: var(--green); }
+  .tab .count { font-weight: 500; }
+  .panel { display: none; padding-bottom: 32px; }
+  .panel.active { display: block; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .panel-head h3 { margin: 0; font-size: 1.05rem; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  /* Cards */
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .code { font-weight: 700; color: var(--green-dark); font-size: .85rem; letter-spacing: .02em; }
+  .title { font-weight: 600; font-size: 1rem; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .badge {
+    display: inline-block; font-size: .72rem; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+  }
+  .badge.exam { background: var(--green-light); color: var(--green-dark); }
+  .badge.cat { background: var(--amber-light); color: var(--amber); }
+  .badge.notes { background: #e8eefc; color: #2b4ea8; }
+  .badge.new { background: #fff0f6; color: #b0146a; }
+  .actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+  .empty { color: var(--muted); text-align: center; padding: 30px 10px; grid-column: 1 / -1; }
+
+  /* Partners */
+  .avatar {
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--green-light); color: var(--green-dark); font-weight: 700; font-size: 1.05rem; flex: 0 0 44px;
+  }
+  .partner-row { display: flex; gap: 12px; align-items: center; }
+  .status { font-size: .82rem; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: .75rem; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; }
+  .chip.hit { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: .9rem; cursor: pointer; user-select: none; }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--green); }
+
+  /* Deadlines */
+  .dl { border-left: 5px solid var(--ok); }
+  .dl.red { border-left-color: var(--red); }
+  .dl.amber { border-left-color: var(--amber); }
+  .dl.done { opacity: .55; border-left-color: #999; }
+  .dl.done .title { text-decoration: line-through; }
+  .countdown { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; }
+  .dl.red .countdown { color: var(--red); }
+  .dl.amber .countdown { color: var(--amber); }
+  .dl:not(.red):not(.amber):not(.done) .countdown { color: var(--ok); }
+  .dl-form {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .dl-form h4 { margin: 0 0 10px; font-size: .95rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 640px) { .form-grid { grid-template-columns: repeat(3, 1fr); } .form-grid .span2 { grid-column: span 2; } }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; color: var(--muted); font-weight: 600; }
+  label.f input, label.f select {
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: #fff; color: var(--ink); font-size: .95rem; width: 100%;
+  }
+  label.f input:focus, label.f select:focus { outline: 2px solid var(--green); outline-offset: 0; border-color: var(--green); }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; z-index: 50;
+    align-items: flex-end; justify-content: center; padding: 0;
+  }
+  .modal-bg.open { display: flex; }
+  @media (min-width: 640px) { .modal-bg { align-items: center; padding: 20px; } }
+  .modal {
+    background: #fff; width: 100%; max-width: 560px; max-height: 92vh; overflow: auto;
+    border-radius: 18px 18px 0 0; padding: 18px 18px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  @media (min-width: 640px) { .modal { border-radius: 18px; } }
+  .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .modal-head h3 { margin: 0; font-size: 1.1rem; }
+  .x { background: transparent; border: 0; font-size: 1.5rem; line-height: 1; color: var(--muted); padding: 2px 6px; }
+  .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: .93rem; }
+  .q b { color: var(--green-dark); }
+  .modal iframe, .modal img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+  .modal iframe { height: 60vh; }
+  .modal img { max-height: 60vh; object-fit: contain; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .file-note { font-size: .8rem; color: var(--muted); }
+
+  /* Toast */
+  #toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; width: calc(100% - 32px); max-width: 380px; pointer-events: none; }
+  .toast {
+    background: var(--ink); color: #fff; padding: 11px 14px; border-radius: 10px; font-size: .9rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25); opacity: 0; transform: translateY(8px);
+    transition: opacity .2s, transform .2s; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.ok { background: var(--green-dark); }
+  .toast.err { background: var(--red); }
+  .toast.warn { background: var(--amber); }
+
+  footer { border-top: 1px solid var(--line); padding: 18px 0 28px; text-align: center; color: var(--muted); font-size: .85rem; }
+  footer a { color: var(--green-dark); margin-left: 10px; }
+  .sr { position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>📚 Mwakenya Study Hub</h1>
+    <button class="btn sm" id="uploadBtn">⬆ Upload</button>
+  </div>
+</header>
+
+<button id="alertBanner" type="button"></button>
+
+<main class="wrap">
+  <section class="hero">
+    <h2>The only mwakenya your lecturer will approve.</h2>
+    <p>Past papers, CATs, notes and study partners for every unit, in one place.</p>
+    <div class="search">
+      <span aria-hidden="true">🔍</span>
+      <input id="search" type="search" placeholder="Search a unit, e.g. SCS 201 or Calculus" autocomplete="off" aria-label="Search all units">
+      <button class="clear" id="clearSearch" aria-label="Clear search">×</button>
+    </div>
+    <div class="search-hint">Try: <span data-q="SCS 201">SCS 201</span> · <span data-q="Accounting">Accounting</span> · <span data-q="BIT 2204">BIT 2204</span></div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="papers" role="tab">Past Papers &amp; CATs <span class="count" id="cnt-papers"></span></button>
+    <button class="tab" data-tab="notes" role="tab">Notes <span class="count" id="cnt-notes"></span></button>
+    <button class="tab" data-tab="partners" role="tab">Study Partners <span class="count" id="cnt-partners"></span></button>
+    <button class="tab" data-tab="deadlines" role="tab">Deadlines <span class="count" id="cnt-deadlines"></span></button>
+  </nav>
+
+  <section class="panel active" id="panel-papers">
+    <div class="panel-head"><h3>Past Papers &amp; CATs</h3><button class="btn ghost sm" data-open-upload="Exam">+ Upload a paper</button></div>
+    <div class="grid" id="papersGrid"></div>
+  </section>
+
+  <section class="panel" id="panel-notes">
+    <div class="panel-head"><h3>Notes</h3><button class="btn ghost sm" data-open-upload="Notes">+ Upload notes</button></div>
+    <div class="grid" id="notesGrid"></div>
+  </section>
+
+  <section class="panel" id="panel-partners">
+    <div class="panel-head">
+      <h3>Study Partners</h3>
+      <label class="toggle"><input type="checkbox" id="freeOnly"> Free now only</label>
+    </div>
+    <div class="grid" id="partnersGrid"></div>
+  </section>
+
+  <section class="panel" id="panel-deadlines">
+    <div class="panel-head"><h3>Deadlines</h3><span class="meta" id="dlSummary"></span></div>
+    <form class="dl-form" id="dlForm">
+      <h4>Add deadline</h4>
+      <div class="form-grid">
+        <label class="f span2">Title <input name="title" required placeholder="e.g. CAT 2 – Data Structures" maxlength="80"></label>
+        <label class="f">Unit <input name="unit" required placeholder="SCS 201" maxlength="20"></label>
+        <label class="f">Type
+          <select name="type"><option>CAT</option><option>Assignment</option><option>Exam</option><option>Presentation</option></select>
+        </label>
+        <label class="f">Date <input name="date" type="date" required></label>
+        <label class="f">Time <input name="time" type="time" required value="09:00"></label>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end"><button class="btn sm" type="submit">Add deadline</button></div>
+    </form>
+    <div class="grid" id="deadlinesGrid"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Demo build · sample data <a href="#" id="resetDemo">Reset demo</a></div>
+</footer>
+
+<!-- Generic modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" id="modal">
+    <div class="modal-head"><h3 id="modalTitle"></h3><button class="x" id="modalClose" aria-label="Close">×</button></div>
+    <div id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div class="modal-bg" id="uploadBg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3>Upload to the hub</h3><button class="x" id="uploadClose" aria-label="Close">×</button></div>
+    <form id="uploadForm">
+      <div class="form-grid">
+        <label class="f">Unit code <input name="code" required placeholder="SCS 201" maxlength="12"></label>
+        <label class="f span2">Unit name <input name="name" required placeholder="Data Structures" maxlength="60"></label>
+        <label class="f">Year <input name="year" type="number" min="2010" max="2030" value="2025" required></label>
+        <label class="f">Type
+          <select name="type" id="uploadType"><option>Exam</option><option>CAT</option><option>Notes</option></select>
+        </label>
+        <label class="f">File (PDF or image, max 10MB) <input name="file" type="file" accept=".pdf,image/*,application/pdf" required></label>
+      </div>
+      <p class="file-note">The file stays on this device for the current session. Only the card details are saved.</p>
+      <div class="modal-foot">
+        <button type="button" class="btn muted" id="uploadCancel">Cancel</button>
+        <button type="submit" class="btn">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Storage (safe) ---------- */
+  var KEYS = { uploads: 'msh.uploads', deadlines: 'msh.deadlines', requests: 'msh.requests', done: 'msh.done' };
+  function load(key, fallback) {
+    try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch (e) { toast('Could not save (storage blocked). Changes last this session only.', 'warn'); return false; }
+  }
+
+  /* ---------- Toasts ---------- */
+  var toastsEl = document.getElementById('toasts');
+  function toast(msg, kind) {
+    var t = document.createElement('div');
+    t.className = 'toast ' + (kind || '');
+    t.textContent = msg;
+    toastsEl.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 250); }, 2800);
+  }
+
+  /* ---------- Seed data ---------- */
+  var UNITS = {
+    'SCS 201':  'Data Structures',
+    'BCOM 210': 'Financial Accounting',
+    'UCC 101':  'Communication Skills',
+    'SMA 201':  'Calculus II',
+    'BIT 2204': 'Database Systems'
+  };
+
+  var QUESTIONS = {
+    'SCS 201': [
+      'Explain the difference between a stack and a queue. Give one real-world application of each. (6 marks)',
+      'Write a function to reverse a singly linked list in place and state its time and space complexity. (8 marks)',
+      'Insert the keys 50, 30, 70, 20, 40, 60, 80 into an empty binary search tree and give the in-order traversal. (6 marks)'
+    ],
+    'BCOM 210': [
+      'Distinguish between the accrual basis and cash basis of accounting with examples. (5 marks)',
+      'Prepare a trial balance from the following ledger balances of Wanjiku Traders as at 31 December 2024. (10 marks)',
+      'Explain how depreciation is treated in the income statement and the statement of financial position. (5 marks)'
+    ],
+    'UCC 101': [
+      'Describe the communication process model and explain two barriers to effective communication. (6 marks)',
+      'Write a formal memo to the Dean of Students requesting an extension of library hours during exams. (8 marks)',
+      'Discuss the importance of non-verbal cues in an oral presentation. (6 marks)'
+    ],
+    'SMA 201': [
+      'Evaluate the integral of x·e^(2x) dx using integration by parts. (5 marks)',
+      'Find the volume of the solid formed when y = √x, 0 ≤ x ≤ 4, is rotated about the x-axis. (7 marks)',
+      'Determine whether the series Σ 1/(n² + n) converges and find its sum if it does. (8 marks)'
+    ],
+    'BIT 2204': [
+      'Normalise the given STUDENT_ENROLMENT relation to 3NF, showing each step. (10 marks)',
+      'Write SQL to list every student who has registered for more than three units this semester. (5 marks)',
+      'Explain the ACID properties of a transaction and why each matters in a banking system. (5 marks)'
+    ]
+  };
+
+  var SEED_PAPERS = [
+    { id: 'p1', code: 'SCS 201',  year: 2024, type: 'Exam' },
+    { id: 'p2', code: 'SCS 201',  year: 2025, type: 'CAT'  },
+    { id: 'p3', code: 'BCOM 210', year: 2024, type: 'Exam' },
+    { id: 'p4', code: 'BCOM 210', year: 2025, type: 'CAT'  },
+    { id: 'p5', code: 'UCC 101',  year: 2023, type: 'Exam' },
+    { id: 'p6', code: 'SMA 201',  year: 2024, type: 'Exam' },
+    { id: 'p7', code: 'SMA 201',  year: 2025, type: 'CAT'  },
+    { id: 'p8', code: 'BIT 2204', year: 2024, type: 'Exam' }
+  ].map(function (p) { p.name = UNITS[p.code]; return p; });
+
+  var SEED_NOTES = [
+    { id: 'n1', code: 'SCS 201',  title: 'Linked lists, stacks & queues – summary', by: 'Grace' },
+    { id: 'n2', code: 'SCS 201',  title: 'Trees & graph traversal cheat sheet',     by: 'Osoro' },
+    { id: 'n3', code: 'BCOM 210', title: 'Ledger to trial balance worked examples', by: 'Euniah' },
+    { id: 'n4', code: 'UCC 101',  title: 'Report & memo writing templates',         by: 'Elsa' },
+    { id: 'n5', code: 'SMA 201',  title: 'Integration techniques with solutions',   by: 'Domitila' },
+    { id: 'n6', code: 'BIT 2204', title: 'Normalisation 1NF→3NF explained',         by: 'Neparon' }
+  ].map(function (n) { n.name = UNITS[n.code]; n.type = 'Notes'; return n; });
+
+  var PARTNERS = [
+    { id: 'u1', name: 'Grace',    course: 'BSc Computer Science',      units: ['SCS 201', 'SMA 201'],  free: true  },
+    { id: 'u2', name: 'Euniah',   course: 'Bachelor of Commerce',      units: ['BCOM 210', 'UCC 101'], free: true  },
+    { id: 'u3', name: 'Elsa',     course: 'BSc Computer Science',      units: ['SCS 201', 'BIT 2204'], free: false },
+    { id: 'u4', name: 'Domitila', course: 'BSc Mathematics',           units: ['SMA 201', 'UCC 101'],  free: true  },
+    { id: 'u5', name: 'Neparon',  course: 'BSc Information Tech',      units: ['BIT 2204', 'SCS 201'], free: false },
+    { id: 'u6', name: 'Osoro',    course: 'BSc Computer Science',      units: ['SCS 201', 'BIT 2204'], free: true  },
+    { id: 'u7', name: 'Elvis',    course: 'Bachelor of Commerce',      units: ['BCOM 210', 'SMA 201'], free: false }
+  ];
+
+  function atDaysFromNow(days, hour, minute) {
+    var d = new Date(); d.setDate(d.getDate() + days); d.setHours(hour, minute, 0, 0); return d.toISOString();
+  }
+  // Seeds are rebuilt relative to "today" on every load so the demo countdowns never go stale.
+  var SEED_DEADLINES = [
+    { id: 'd1', title: 'CAT 2 – Data Structures',       unit: 'SCS 201',  type: 'CAT',        due: atDaysFromNow(1, 9, 0)  },
+    { id: 'd2', title: 'Assignment 3 – Trial Balance',  unit: 'BCOM 210', type: 'Assignment', due: atDaysFromNow(2, 17, 0) },
+    { id: 'd3', title: 'Group presentation',            unit: 'UCC 101',  type: 'Presentation', due: atDaysFromNow(6, 11, 0) },
+    { id: 'd4', title: 'End of semester exam',          unit: 'SMA 201',  type: 'Exam',       due: atDaysFromNow(12, 9, 0) }
+  ];
+
+  /* ---------- State ---------- */
+  var uploads = load(KEYS.uploads, []);           // persisted card details only
+  var userDeadlines = load(KEYS.deadlines, []);
+  var requests = load(KEYS.requests, {});         // partnerId -> true
+  var doneMap = load(KEYS.done, {});              // deadlineId -> true
+  var fileUrls = {};                              // uploadId -> object URL (this session only)
+  var query = '';
+  var freeOnly = false;
+
+  /* ---------- Helpers ---------- */
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function norm(s) { return String(s || '').toLowerCase().replace(/\s+/g, ''); }
+  function matches(item) {
+    if (!query) return true;
+    var q = norm(query);
+    var hay = norm((item.code || '') + ' ' + (item.name || '') + ' ' + (item.title || '') + ' ' + (item.unit || ''));
+    return hay.indexOf(q) !== -1;
+  }
+  function partnerMatches(p) {
+    if (!query) return true;
+    var q = norm(query);
+    return p.units.some(function (u) { return norm(u + ' ' + (UNITS[u] || '')).indexOf(q) !== -1; }) || norm(p.name).indexOf(q) !== -1;
+  }
+  function uid(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  /* ---------- Modal ---------- */
+  var modalBg = document.getElementById('modalBg');
+  var modalTitle = document.getElementById('modalTitle');
+  var modalBody = document.getElementById('modalBody');
+  var modalFoot = document.getElementById('modalFoot');
+  function openModal(title, bodyHtml, footHtml) {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = bodyHtml;
+    modalFoot.innerHTML = footHtml || '<button class="btn muted" data-close>Close</button>';
+    modalBg.classList.add('open');
+  }
+  function closeModal() { modalBg.classList.remove('open'); modalBody.innerHTML = ''; }
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  modalBg.addEventListener('click', function (e) { if (e.target === modalBg || e.target.hasAttribute('data-close')) closeModal(); });
+
+  function viewItem(item, kind) {
+    if (item.uploaded) {
+      var url = fileUrls[item.id];
+      if (!url) {
+        toast('That file was only kept for the session it was uploaded in. Upload it again to view.', 'warn');
+        return;
+      }
+      var body = item.fileType === 'application/pdf'
+        ? '<iframe src="' + url + '" title="' + esc(item.fileName) + '"></iframe>'
+        : '<img src="' + url + '" alt="' + esc(item.fileName) + '">';
+      body += '<p class="file-note">' + esc(item.fileName) + ' · ' + (item.fileSize / 1024 / 1024).toFixed(2) + ' MB</p>';
+      openModal(item.code + ' · ' + item.name, body,
+        '<a class="btn ghost" href="' + url + '" target="_blank" rel="noopener">Open in new tab</a><button class="btn muted" data-close>Close</button>');
+      toast('Opened ' + item.fileName, 'ok');
+      return;
+    }
+    if (kind === 'note') {
+      var qs = QUESTIONS[item.code] || [];
+      openModal(item.title,
+        '<p class="meta">' + esc(item.code) + ' · ' + esc(item.name) + ' · uploaded by ' + esc(item.by) + '</p>' +
+        '<div class="q"><b>Covers:</b> the topics most likely to appear in this unit\'s CAT and exam, with worked examples.</div>' +
+        '<div class="q"><b>Practice questions in these notes:</b><ol style="margin:6px 0 0 18px;padding:0">' +
+        qs.map(function (x) { return '<li style="margin-bottom:4px">' + esc(x) + '</li>'; }).join('') + '</ol></div>');
+      toast('Viewing notes: ' + item.title, 'ok');
+      return;
+    }
+    var list = QUESTIONS[item.code] || ['Sample questions for this unit are being compiled.'];
+    openModal(item.code + ' · ' + item.name + ' · ' + item.year + ' ' + item.type,
+      '<p class="meta">Sample questions (demo data)</p>' +
+      list.map(function (q, i) { return '<div class="q"><b>Q' + (i + 1) + '.</b> ' + esc(q) + '</div>'; }).join('') +
+      '<p class="file-note">Time allowed: ' + (item.type === 'CAT' ? '1 hour' : '2 hours') + ' · Answer ALL questions.</p>');
+    toast('Opened ' + item.code + ' ' + item.year + ' ' + item.type, 'ok');
+  }
+
+  /* ---------- Render: papers & notes ---------- */
+  function paperCard(p) {
+    var badge = p.type === 'CAT' ? 'cat' : 'exam';
+    return '<div class="card">' +
+      '<div class="top"><div><div class="code">' + esc(p.code) + '</div><div class="title">' + esc(p.name) + '</div></div>' +
+      '<div><span class="badge ' + badge + '">' + esc(p.type) + '</span>' + (p.uploaded ? ' <span class="badge new">New</span>' : '') + '</div></div>' +
+      '<div class="meta">' + esc(p.year) + (p.uploaded ? ' · uploaded by you' : '') + '</div>' +
+      '<div class="actions"><button class="btn sm" data-view="' + esc(p.id) + '">View</button></div>' +
+      '</div>';
+  }
+  function noteCard(n) {
+    return '<div class="card">' +
+      '<div class="top"><div><div class="code">' + esc(n.code) + ' · ' + esc(n.name) + '</div><div class="title">' + esc(n.title) + '</div></div>' +
+      (n.uploaded ? '<span class="badge new">New</span>' : '<span class="badge notes">Notes</span>') + '</div>' +
+      '<div class="meta">Uploaded by ' + esc(n.by) + (n.year ? ' · ' + esc(n.year) : '') + '</div>' +
+      '<div class="actions"><button class="btn sm" data-view="' + esc(n.id) + '">View</button></div>' +
+      '</div>';
+  }
+
+  function allPapers() {
+    return uploads.filter(function (u) { return u.type !== 'Notes'; }).concat(SEED_PAPERS);
+  }
+  function allNotes() {
+    return uploads.filter(function (u) { return u.type === 'Notes'; }).concat(SEED_NOTES);
+  }
+  function findItem(id) {
+    var all = allPapers().concat(allNotes());
+    for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
+    return null;
+  }
+
+  function renderPapers() {
+    var list = allPapers().filter(matches);
+    document.getElementById('papersGrid').innerHTML = list.length ? list.map(paperCard).join('') :
+      '<div class="empty">No papers match “' + esc(query) + '”. Be the first to <a href="#" data-open-upload="Exam">upload one</a>.</div>';
+    return list.length;
+  }
+  function renderNotes() {
+    var list = allNotes().filter(matches);
+    document.getElementById('notesGrid').innerHTML = list.length ? list.map(noteCard).join('') :
+      '<div class="empty">No notes match “' + esc(query) + '”. <a href="#" data-open-upload="Notes">Upload notes</a>.</div>';
+    return list.length;
+  }
+
+  /* ---------- Render: partners ---------- */
+  function renderPartners() {
+    var list = PARTNERS.filter(partnerMatches).filter(function (p) { return !freeOnly || p.free; });
+    var q = norm(query);
+    document.getElementById('partnersGrid').innerHTML = list.length ? list.map(function (p) {
+      var requested = !!requests[p.id];
+      return '<div class="card">' +
+        '<div class="partner-row"><div class="avatar">' + esc(p.name[0]) + '</div>' +
+        '<div><div class="title">' + esc(p.name) + '</div><div class="meta">' + esc(p.course) + '</div></div></div>' +
+        '<div class="status">' + (p.free ? '🟢 Free now' : '🔴 In class') + '</div>' +
+        '<div class="meta">Revising:</div><div class="chips">' + p.units.map(function (u) {
+          var hit = q && norm(u + ' ' + (UNITS[u] || '')).indexOf(q) !== -1;
+          return '<span class="chip' + (hit ? ' hit' : '') + '">' + esc(u) + ' · ' + esc(UNITS[u] || '') + '</span>';
+        }).join('') + '</div>' +
+        '<div class="actions"><button class="btn sm' + (requested ? ' muted' : '') + '" data-connect="' + esc(p.id) + '"' + (requested ? ' disabled' : '') + '>' +
+        (requested ? 'Requested ✓' : 'Connect') + '</button></div>' +
+        '</div>';
+    }).join('') : '<div class="empty">No study partners ' + (freeOnly ? 'free right now' : 'match') + (query ? ' for “' + esc(query) + '”' : '') + '.</div>';
+    return list.length;
+  }
+
+  /* ---------- Deadlines ---------- */
+  function allDeadlines() {
+    return SEED_DEADLINES.concat(userDeadlines).map(function (d) {
+      return { id: d.id, title: d.title, unit: d.unit, type: d.type, due: d.due, done: !!doneMap[d.id] };
+    }).sort(function (a, b) { return new Date(a.due) - new Date(b.due); });
+  }
+  function urgency(ms) {
+    if (ms < 24 * 3600e3) return 'red';
+    if (ms < 72 * 3600e3) return 'amber';
+    return '';
+  }
+  function fmtCountdown(ms) {
+    if (ms <= 0) return 'Overdue';
+    var s = Math.floor(ms / 1000);
+    var d = Math.floor(s / 86400); s -= d * 86400;
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    return (d ? d + 'd ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  function fmtDate(iso) {
+    var d = new Date(iso);
+    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function toGCal(d) {
+    var start = new Date(d.due);
+    var end = new Date(start.getTime() + 2 * 3600e3);
+    function g(x) { return x.toISOString().replace(/[-:]|\.\d{3}/g, ''); }
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(d.type + ': ' + d.title + ' (' + d.unit + ')') +
+      '&dates=' + g(start) + '/' + g(end) +
+      '&details=' + encodeURIComponent('Added from Mwakenya Study Hub') +
+      '&location=' + encodeURIComponent(d.unit);
+  }
+  function downloadIcs(d) {
+    var start = new Date(d.due);
+    var end = new Date(start.getTime() + 2 * 3600e3);
+    function g(x) { return x.toISOString().replace(/[-:]|\.\d{3}/g, ''); }
+    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mwakenya Study Hub//EN', 'BEGIN:VEVENT',
+      'UID:' + d.id + '@mwakenya-study-hub', 'DTSTAMP:' + g(new Date()), 'DTSTART:' + g(start), 'DTEND:' + g(end),
+      'SUMMARY:' + d.type + ': ' + d.title + ' (' + d.unit + ')', 'DESCRIPTION:Added from Mwakenya Study Hub',
+      'BEGIN:VALARM', 'TRIGGER:-PT24H', 'ACTION:DISPLAY', 'DESCRIPTION:' + d.title + ' is due tomorrow', 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    try {
+      var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = d.unit.replace(/\s+/g, '-') + '-' + d.type.toLowerCase() + '.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      toast('Downloaded ' + a.download, 'ok');
+    } catch (e) { toast('Could not create the .ics file in this browser.', 'err'); }
+  }
+
+  function renderDeadlines() {
+    var now = Date.now();
+    var list = allDeadlines().filter(matches);
+    document.getElementById('deadlinesGrid').innerHTML = list.length ? list.map(function (d) {
+      var ms = new Date(d.due) - now;
+      var cls = d.done ? 'done' : urgency(ms);
+      return '<div class="card dl ' + cls + '" data-dl="' + esc(d.id) + '">' +
+        '<div class="top"><div><div class="code">' + esc(d.unit) + ' · ' + esc(d.type) + '</div><div class="title">' + esc(d.title) + '</div></div>' +
+        '<span class="countdown" data-due="' + esc(d.due) + '">' + (d.done ? 'Done' : fmtCountdown(ms)) + '</span></div>' +
+        '<div class="meta">Due ' + fmtDate(d.due) + '</div>' +
+        '<div class="actions">' +
+          (d.done ? '<button class="btn sm muted" data-undone="' + esc(d.id) + '">Undo</button>' : '<button class="btn sm" data-done="' + esc(d.id) + '">Done</button>') +
+          '<a class="btn sm ghost" href="' + toGCal(d) + '" target="_blank" rel="noopener" data-gcal="' + esc(d.id) + '">Google Calendar</a>' +
+          '<button class="btn sm ghost" data-ics="' + esc(d.id) + '">.ics</button>' +
+        '</div></div>';
+    }).join('') : '<div class="empty">No deadlines' + (query ? ' for “' + esc(query) + '”' : '') + '. Add one above.</div>';
+    var open = allDeadlines().filter(function (d) { return !d.done; });
+    document.getElementById('dlSummary').textContent = open.length + ' open · ' + (allDeadlines().length - open.length) + ' done';
+    return list.length;
+  }
+
+  function tick() {
+    var now = Date.now();
+    var nodes = document.querySelectorAll('#deadlinesGrid .dl:not(.done)');
+    for (var i = 0; i < nodes.length; i++) {
+      var cd = nodes[i].querySelector('.countdown');
+      var ms = new Date(cd.getAttribute('data-due')) - now;
+      cd.textContent = fmtCountdown(ms);
+      var cls = urgency(ms);
+      nodes[i].classList.toggle('red', cls === 'red');
+      nodes[i].classList.toggle('amber', cls === 'amber');
+    }
+  }
+  setInterval(tick, 1000);
+
+  function renderBanner() {
+    var now = Date.now();
+    var soon = allDeadlines().filter(function (d) { var ms = new Date(d.due) - now; return !d.done && ms > 0 && ms < 72 * 3600e3; });
+    var b = document.getElementById('alertBanner');
+    if (soon.length) {
+      b.textContent = '⚠ ' + soon.length + ' deadline' + (soon.length === 1 ? '' : 's') + ' in the next 72 hours';
+      b.style.display = 'block';
+    } else { b.style.display = 'none'; }
+  }
+
+  /* ---------- Render all + counts ---------- */
+  function renderAll() {
+    var c = {
+      papers: renderPapers(),
+      notes: renderNotes(),
+      partners: renderPartners(),
+      deadlines: renderDeadlines()
+    };
+    Object.keys(c).forEach(function (k) {
+      document.getElementById('cnt-' + k).textContent = '(' + c[k] + ')';
+    });
+    renderBanner();
+  }
+
+  /* ---------- Tabs ---------- */
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-tab') === name); });
+    document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === 'panel-' + name); });
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { showTab(t.getAttribute('data-tab')); });
+  });
+  document.getElementById('alertBanner').addEventListener('click', function () {
+    showTab('deadlines');
+    document.getElementById('panel-deadlines').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('Showing deadlines due in the next 72 hours', 'warn');
+  });
+
+  /* ---------- Search ---------- */
+  var searchEl = document.getElementById('search');
+  var clearEl = document.getElementById('clearSearch');
+  function setQuery(q) {
+    query = q.trim();
+    searchEl.value = q;
+    clearEl.style.display = query ? 'inline' : 'none';
+    renderAll();
+  }
+  searchEl.addEventListener('input', function () { setQuery(searchEl.value); });
+  clearEl.addEventListener('click', function () { setQuery(''); searchEl.focus(); toast('Search cleared'); });
+  document.querySelectorAll('.search-hint span').forEach(function (s) {
+    s.addEventListener('click', function () { setQuery(s.getAttribute('data-q')); toast('Searching “' + s.getAttribute('data-q') + '” across everything', 'ok'); });
+  });
+
+  /* ---------- Delegated clicks ---------- */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-view],[data-connect],[data-done],[data-undone],[data-ics],[data-gcal],[data-open-upload]');
+    if (!el) return;
+    var id;
+    if (el.hasAttribute('data-view')) {
+      var item = findItem(el.getAttribute('data-view'));
+      if (item) viewItem(item, item.type === 'Notes' ? 'note' : 'paper');
+    } else if (el.hasAttribute('data-connect')) {
+      id = el.getAttribute('data-connect');
+      var p = PARTNERS.filter(function (x) { return x.id === id; })[0];
+      requests[id] = true; save(KEYS.requests, requests);
+      renderAll();
+      toast('Request sent to ' + (p ? p.name : 'partner') + ' ✓', 'ok');
+    } else if (el.hasAttribute('data-done')) {
+      id = el.getAttribute('data-done');
+      doneMap[id] = true; save(KEYS.done, doneMap); renderAll();
+      toast('Marked as done. Nice work!', 'ok');
+    } else if (el.hasAttribute('data-undone')) {
+      id = el.getAttribute('data-undone');
+      delete doneMap[id]; save(KEYS.done, doneMap); renderAll();
+      toast('Deadline reopened');
+    } else if (el.hasAttribute('data-ics')) {
+      id = el.getAttribute('data-ics');
+      var d = allDeadlines().filter(function (x) { return x.id === id; })[0];
+      if (d) downloadIcs(d);
+    } else if (el.hasAttribute('data-gcal')) {
+      toast('Opening Google Calendar with the event prefilled', 'ok');
+    } else if (el.hasAttribute('data-open-upload')) {
+      e.preventDefault();
+      openUpload(el.getAttribute('data-open-upload'));
+    }
+  });
+
+  document.getElementById('freeOnly').addEventListener('change', function (e) {
+    freeOnly = e.target.checked; renderAll();
+    toast(freeOnly ? 'Showing partners who are free now' : 'Showing all partners');
+  });
+
+  /* ---------- Add deadline ---------- */
+  document.getElementById('dlForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target;
+    var title = f.title.value.trim(), unit = f.unit.value.trim().toUpperCase(), type = f.type.value;
+    var when = new Date(f.date.value + 'T' + (f.time.value || '09:00'));
+    if (!title || !unit) { toast('Title and unit are required.', 'err'); return; }
+    if (isNaN(when.getTime())) { toast('Pick a valid date and time.', 'err'); return; }
+    if (when.getTime() < Date.now()) { toast('That deadline is already in the past.', 'err'); return; }
+    userDeadlines.push({ id: uid('d'), title: title, unit: unit, type: type, due: when.toISOString() });
+    save(KEYS.deadlines, userDeadlines);
+    f.reset(); f.time.value = '09:00';
+    renderAll();
+    toast('Deadline added: ' + title, 'ok');
+  });
+
+  /* ---------- Upload ---------- */
+  var uploadBg = document.getElementById('uploadBg');
+  var uploadForm = document.getElementById('uploadForm');
+  function openUpload(type) {
+    if (type) document.getElementById('uploadType').value = type;
+    uploadBg.classList.add('open');
+    setTimeout(function () { uploadForm.code.focus(); }, 50);
+  }
+  function closeUpload() { uploadBg.classList.remove('open'); }
+  document.getElementById('uploadBtn').addEventListener('click', function () { openUpload(); });
+  document.getElementById('uploadClose').addEventListener('click', closeUpload);
+  document.getElementById('uploadCancel').addEventListener('click', function () { closeUpload(); toast('Upload cancelled'); });
+  uploadBg.addEventListener('click', function (e) { if (e.target === uploadBg) closeUpload(); });
+
+  uploadForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = uploadForm;
+    var code = f.code.value.trim().toUpperCase().replace(/\s+/g, ' ');
+    var name = f.name.value.trim();
+    var year = parseInt(f.year.value, 10);
+    var type = f.type.value;
+    var file = f.file.files[0];
+    if (!code || !name) { toast('Unit code and name are required.', 'err'); return; }
+    if (!(year >= 2010 && year <= 2030)) { toast('Year must be between 2010 and 2030.', 'err'); return; }
+    if (!file) { toast('Choose a PDF or image to upload.', 'err'); return; }
+    var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    var isImg = /^image\//.test(file.type);
+    if (!isPdf && !isImg) { toast('Only PDF or image files are allowed.', 'err'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('File is ' + (file.size / 1024 / 1024).toFixed(1) + ' MB. Max is 10 MB.', 'err'); return; }
+
+    var item = {
+      id: uid('up'), code: code, name: name, year: year, type: type, uploaded: true,
+      fileName: file.name, fileSize: file.size, fileType: isPdf ? 'application/pdf' : file.type,
+      title: type === 'Notes' ? name + ' notes (' + year + ')' : undefined, by: 'You', at: Date.now()
+    };
+    try { fileUrls[item.id] = URL.createObjectURL(file); }
+    catch (err) { toast('Could not open the file in this browser.', 'err'); return; }
+
+    uploads.unshift(item);
+    save(KEYS.uploads, uploads);
+    closeUpload();
+    f.reset(); f.year.value = '2025';
+    renderAll();
+    showTab(type === 'Notes' ? 'notes' : 'papers');
+    toast('Uploaded ' + file.name + ' to ' + code, 'ok');
+  });
+
+  /* ---------- Reset demo ---------- */
+  document.getElementById('resetDemo').addEventListener('click', function (e) {
+    e.preventDefault();
+    try { Object.keys(KEYS).forEach(function (k) { localStorage.removeItem(KEYS[k]); }); } catch (err) { /* storage blocked: reload still resets in-memory state */ }
+    toast('Demo reset. Reloading…');
+    setTimeout(function () { location.reload(); }, 500);
+  });
+
+  /* ---------- Keyboard ---------- */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeModal(); closeUpload(); }
+    if (e.key === '/' && document.activeElement !== searchEl && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); searchEl.focus(); }
+  });
+
+  /* ---------- Boot ---------- */
+  (function boot() {
+    var dateInput = document.querySelector('#dlForm input[name=date]');
+    var t = new Date(); t.setDate(t.getDate() + 1);
+    dateInput.min = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+    dateInput.value = dateInput.min;
+    renderAll();
+    var restored = uploads.length;
+    if (restored) toast(restored + ' upload' + (restored === 1 ? '' : 's') + ' restored. Files need re-uploading to view.', 'warn');
+    else toast('Welcome to Mwakenya Study Hub 📚', 'ok');
+  })();
+})();
+</script>
+</body>
+</html>
